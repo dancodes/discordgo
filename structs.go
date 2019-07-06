@@ -684,6 +684,21 @@ type ReadState struct {
 	ID            string `json:"id"`
 }
 
+func (t *ReadState) UnmarshalJSON(d []byte) error {
+	type ReadStateTemp ReadState
+	x := struct {
+		ReadStateTemp             // embed
+		LastMessageID json.Number `json:"last_message_id"`
+	}{ReadStateTemp: ReadStateTemp(*t)}
+
+	if err := json.Unmarshal(d, &x); err != nil {
+		return err
+	}
+	*t = ReadState(x.ReadStateTemp)
+	t.LastMessageID = x.LastMessageID.String()
+	return nil
+}
+
 // An Ack is used to ack messages
 type Ack struct {
 	Token string `json:"token"`
